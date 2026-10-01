@@ -8,3 +8,5 @@ dist/
 
 # fineweb data shards (600MB+, re-downloadable via data/cached_fineweb10B.py)
 data/fineweb10B/
+
+logs/
