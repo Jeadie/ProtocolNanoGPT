@@ -1,0 +1,22 @@
+name: lint
+
+# Pyflakes-only (F-codes): unused imports, undefined names, redefined-while-unused,
+# etc. -- real bugs, not style. Full default ruff (and especially E-codes) floods
+# this repo with hundreds of hits that are just its intentional dense one-liner
+# style, not issues worth fixing.
+#
+# scripts/frozen_baseline.py is excluded: it's concatenated FROZEN code fragments
+# for diffing (see scripts/extract_frozen.py), not a standalone valid Python file.
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  ruff:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+      - run: uvx ruff check . --select F --exclude scripts/frozen_baseline.py
