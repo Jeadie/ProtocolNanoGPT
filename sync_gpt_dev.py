@@ -132,7 +132,8 @@ def main():
         print(f"no changes: {PROD_FILE} already matches {DEV_FILE}")
 
     if check_only:
-        return
+        # non-zero on drift so CI can gate on it; interactive use still gets the diff above
+        sys.exit(1 if diff else 0)
     if diff:
         PROD_FILE.write_text(new_prod_src)
         print(f"\nwrote {PROD_FILE}")

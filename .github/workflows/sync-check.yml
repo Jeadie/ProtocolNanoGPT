@@ -1,0 +1,42 @@
+name: sync check
+
+# Guards the single-source-of-truth workflow: train_gpt_dev.py is what gets edited,
+# train_gpt.py is generated from it by sync_gpt_dev.py and should never drift from
+# what that script would produce. Fails if someone edits train_gpt.py directly, or
+# forgets to re-run the sync script after editing train_gpt_dev.py, or if FROZEN
+# content ever changes (whether from a sync_gpt_dev.py regression or a direct edit).
+
+on:
+  push:
+    paths:
+      - "train_gpt_dev.py"
+      - "train_gpt.py"
+      - "sync_gpt_dev.py"
+      - "scripts/check_frozen.sh"
+      - "scripts/extract_frozen.py"
+      - "scripts/frozen_baseline.py"
+      - ".github/workflows/sync-check.yml"
+  pull_request:
+    paths:
+      - "train_gpt_dev.py"
+      - "train_gpt.py"
+      - "sync_gpt_dev.py"
+      - "scripts/check_frozen.sh"
+      - "scripts/extract_frozen.py"
+      - "scripts/frozen_baseline.py"
+      - ".github/workflows/sync-check.yml"
+  workflow_dispatch:
+
+jobs:
+  sync-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: astral-sh/setup-uv@v5
+
+      - name: Verify FROZEN blocks survive sync_gpt_dev.py untouched
+        run: bash scripts/check_frozen.sh
+
+      - name: Verify train_gpt.py matches what sync_gpt_dev.py generates from train_gpt_dev.py
+        run: uv run python sync_gpt_dev.py --check
